@@ -194,8 +194,10 @@ class CursorManager:
 
     def spawn(self, slot: int) -> None:
         with self.lock:
-            if self.pointer_id(slot) is not None:
-                print(f"Cursor {slot} already exists.")
+            existing_pointer = self.pointer_id(slot)
+            if existing_pointer is not None:
+                self.renderer.apply(slot, existing_pointer)
+                print(f"Cursor {slot} already exists; refreshed its numbered appearance.")
                 return
             run_xinput("create-master", f"{APP_PREFIX}{slot}", "false", "true")
             pointer = self.pointer_id(slot)
