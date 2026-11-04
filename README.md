@@ -4,12 +4,12 @@ A terminal-controlled multi-cursor utility for Linux X11.
 
 ## Controls
 
-To avoid Linux virtual-terminal switching shortcuts, the app uses **Shift-modified function keys**:
+To avoid Linux virtual-terminal switching shortcuts, the app uses the **number row** with Shift:
 
-- **Ctrl + Shift + F1 ... F12**: spawn a numbered cursor, or despawn it if it already exists.
-- **Alt + Shift + F1 ... F12**: focus a cursor and route physical mouse input to it.
+- **Ctrl + Shift + 1 ... 9, 0**: spawn a numbered cursor, or despawn it if it already exists. The keys map to cursors 1 through 10, with 0 controlling cursor 10.
+- **Alt + Shift + 1 ... 9, 0**: focus the matching cursor and route physical mouse input to it.
 
-Do not use Ctrl + Alt + F1 ... F6: those combinations can switch away from the desktop to a Linux virtual terminal.
+The app does not register Ctrl + Alt shortcuts. Avoid Ctrl + Alt + F1 ... F6 because Linux uses those to switch to a virtual terminal.
 
 ## Cursor appearance
 
