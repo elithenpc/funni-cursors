@@ -12,7 +12,7 @@ import sys
 import threading
 from dataclasses import dataclass
 
-from pynput import keyboard
+from Xlib import X, XK, display as xdisplay
 
 APP_PREFIX = "Funni Cursor "
 MAX_CURSORS = 12
@@ -172,24 +172,61 @@ def main() -> int:
     def make_focus(slot: int):
         return lambda: manager.focus(slot)
 
-    hotkeys = {}
-    for slot in range(1, max_cursors + 1):
-        key = f"f{slot}"
-        hotkeys[f"<ctrl>+<{key}>"] = make_spawn(slot)
-        hotkeys[f"<alt>+<{key}>"] = make_focus(slot)
+    xdisplay_conn = xdisplay.Display()
+    root = xdisplay_conn.screen().root
+    grabbed: list[tuple[int, int]] = []
 
-    def stop(_signum=None, _frame=None):
-        manager.restore()
-        raise KeyboardInterrupt
-
-    signal.signal(signal.SIGTERM, stop)
     try:
-        with keyboard.GlobalHotKeys(hotkeys) as listener:
-            listener.join()
+        for slot in range(1, max_cursors + 1):
+            keycode = xdisplay_conn.keysym_to_keycode(
+                XK.string_to_keysym(f"F{slot}")
+            )
+            for modifier in (X.ControlMask, X.Mod1Mask):
+                # Also grab Caps Lock and Num Lock variants.
+                for extra in (0, X.LockMask, X.Mod2Mask, X.LockMask | X.Mod2Mask):
+                    root.grab_key(
+                        keycode, modifier | extra, False,
+                        X.GrabModeAsync, X.GrabModeAsync,
+                    )
+                    grabbed.append((keycode, modifier | extra))
+        xdisplay_conn.sync()
+        print("Hotkeys grabbed. They will not trigger desktop shortcuts.")
+
+        def stop(_signum=None, _frame=None):
+            manager.restore()
+            raise KeyboardInterrupt
+
+        signal.signal(signal.SIGTERM, stop)
+        while True:
+            event = xdisplay_conn.next_event()
+            if event.type != X.KeyPress:
+                continue
+            modifiers = event.state & ~(X.LockMask | X.Mod2Mask)
+            for slot in range(1, max_cursors + 1):
+                keycode = xdisplay_conn.keysym_to_keycode(
+                    XK.string_to_keysym(f"F{slot}")
+                )
+                if event.detail != keycode:
+                    continue
+                if modifiers == X.ControlMask:
+                    if manager.pointer_id(slot) is not None:
+                        manager.despawn(slot)
+                    else:
+                        manager.spawn(slot)
+                elif modifiers == X.Mod1Mask:
+                    manager.focus(slot)
+                break
     except KeyboardInterrupt:
         pass
     finally:
         manager.restore()
+        for keycode, modifiers in grabbed:
+            try:
+                root.ungrab_key(keycode, modifiers)
+            except Exception:
+                pass
+        xdisplay_conn.sync()
+        xdisplay_conn.close()
     return 0
 
 
