@@ -1,1 +1,2 @@
 python-xlib>=0.33,<1.0
+Pillow>=9.0,<13
