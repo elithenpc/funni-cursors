@@ -111,9 +111,13 @@ class CursorManager:
                 print(f"Cursor {slot} does not exist. Press Ctrl+F{slot} first.")
                 return
             self.refresh_devices()
+            previous_pointer = (
+                self.pointer_id(self.active_slot) if self.active_slot is not None else None
+            )
             candidates = [
                 device for device in self.devices.values()
                 if device.attachment == self.core_pointer_id
+                or (previous_pointer is not None and device.attachment == previous_pointer)
             ]
             if not candidates:
                 print("No physical slave pointer is attached to the core pointer.")
