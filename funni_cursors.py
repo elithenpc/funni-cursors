@@ -20,7 +20,8 @@ from PIL import Image, ImageDraw, ImageFont
 from Xlib import X, XK, display as xdisplay
 
 APP_PREFIX = "Funni Cursor "
-MAX_CURSORS = 12
+KEYS = "1234567890"
+MAX_CURSORS = len(KEYS)
 PALETTE = [
     "#2878E8", "#E28A22", "#22A06B", "#B45AC8",
     "#D64B55", "#159DA8", "#8A6DDB", "#A56A43",
@@ -231,7 +232,7 @@ class CursorManager:
         with self.lock:
             pointer = self.pointer_id(slot)
             if pointer is None:
-                print(f"Cursor {slot} does not exist. Spawn it with Ctrl+Shift+F{slot}.")
+                print(f"Cursor {slot} does not exist. Spawn it with Ctrl+Shift+{KEYS[slot - 1]}.")
                 return
             self.refresh_devices()
             previous_pointer = (
@@ -294,9 +295,9 @@ def main() -> int:
         return 1
 
     print("funni-cursors is running.")
-    print("Ctrl+Shift+F1..F12: spawn/despawn numbered cursors.")
-    print("Alt+Shift+F1..F12: focus a cursor.")
-    print("Ctrl+Alt+F is deliberately NOT used, so it cannot trigger a VT switch.")
+    print("Ctrl+Shift+1..9,0: spawn/despawn numbered cursors 1..10.")
+    print("Alt+Shift+1..9,0: focus cursors 1..10.")
+    print("Ctrl+Alt combinations are not registered, avoiding virtual-terminal shortcuts.")
     print("Press Ctrl+C to restore devices and remove cursors created by this run.")
 
     xdisplay_conn = xdisplay.Display()
@@ -306,7 +307,7 @@ def main() -> int:
 
     try:
         for slot in range(1, max_cursors + 1):
-            keycode = xdisplay_conn.keysym_to_keycode(XK.string_to_keysym(f"F{slot}"))
+            keycode = xdisplay_conn.keysym_to_keycode(XK.string_to_keysym(KEYS[slot - 1]))
             modifiers_by_slot[slot] = (
                 X.ControlMask | X.ShiftMask,
                 X.Mod1Mask | X.ShiftMask,
@@ -331,7 +332,7 @@ def main() -> int:
                 continue
             modifiers = event.state & ~(X.LockMask | X.Mod2Mask)
             for slot in range(1, max_cursors + 1):
-                keycode = xdisplay_conn.keysym_to_keycode(XK.string_to_keysym(f"F{slot}"))
+                keycode = xdisplay_conn.keysym_to_keycode(XK.string_to_keysym(KEYS[slot - 1]))
                 if event.detail != keycode:
                     continue
                 spawn_mod, focus_mod = modifiers_by_slot[slot]
