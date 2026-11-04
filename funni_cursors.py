@@ -118,7 +118,7 @@ class NumberedCursorImages:
             label, font=font, fill="white",
         )
         image.save(image_path)
-        config_path.write_text(f"64 3 3 {image_path} 0\\n", encoding="utf-8")
+        config_path.write_text(f"64 3 3 {image_path} 0\n", encoding="utf-8")
 
         result = subprocess.run(
             ["xcursorgen", str(config_path), str(cursor_path)],
@@ -163,7 +163,7 @@ class CursorManager:
         core = None
         for line in output.splitlines():
             if "Virtual core pointer" in line and "[master pointer" in line:
-                match = re.search(r"\\bid=(\\d+)", line)
+                match = re.search(r"\bid=(\d+)", line)
                 if match:
                     core = int(match.group(1))
                     break
@@ -174,7 +174,7 @@ class CursorManager:
         self.devices: dict[int, Device] = {}
         for line in output.splitlines():
             match = re.search(
-                r"(.+?)\\s+id=(\\d+)\\s+\\[slave pointer\\s+\\((\\d+)\\)\\]",
+                r"(.+?)\s+id=(\d+)\s+\[slave pointer\s+\((\d+)\)\]",
                 line,
             )
             if not match:
@@ -188,7 +188,7 @@ class CursorManager:
 
     def pointer_id(self, slot: int) -> int | None:
         output = run_xinput("list", "--short")
-        pattern = re.escape(f"{APP_PREFIX}{slot} pointer") + r"\\s+id=(\\d+)\\s+\\[master pointer"
+        pattern = re.escape(f"{APP_PREFIX}{slot} pointer") + r"\s+id=(\d+)\s+\[master pointer"
         match = re.search(pattern, output)
         return int(match.group(1)) if match else None
 
