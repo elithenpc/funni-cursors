@@ -50,7 +50,7 @@ class CursorManager:
     def refresh_devices(self) -> None:
         output = run_xinput("list", "--short")
         masters = re.findall(
-            r"([^\n]+?)\s+id=(\d+)\s+\[master pointer\\s+\(\d+\)\]",
+            r"([^\n]+?)\s+id=(\d+)\s+\[master pointer\s+\(\d+\)\]",
             output,
         )
         core = next((int(i) for name, i in masters if "Virtual core pointer" in name), None)
@@ -61,7 +61,7 @@ class CursorManager:
         self.devices: dict[int, Device] = {}
         for line in output.splitlines():
             match = re.search(
-                r"(.+?)\s+id=(\d+)\s+\[slave pointer\\s+\((\d+)\)\]",
+                r"(.+?)\s+id=(\d+)\s+\[slave pointer\s+\((\d+)\)\]",
                 line,
             )
             if not match:
