@@ -320,7 +320,7 @@ def main() -> int:
                     )
                     grabbed.append((keycode, modifier | extra))
         xdisplay_conn.sync()
-        print("Hotkeys grabbed. No Ctrl+Alt+F key combinations are registered.")
+        print("Number-row hotkeys grabbed. Ctrl+Alt combinations are not registered.")
 
         def stop(_signum=None, _frame=None):
             raise KeyboardInterrupt
